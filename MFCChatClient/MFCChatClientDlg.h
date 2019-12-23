@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include "CMySocket.h"
 
 
 // CMFCChatClientDlg 对话框
@@ -34,4 +35,13 @@ protected:
 public:
 		
 	afx_msg void OnBnClickedConnectBin();
+
+	CMySocket* m_client;
+	CListBox m_list;
+	CTime m_tm;
+	CEdit m_input;
+	afx_msg void OnBnClickedSendBin();
+	CString CMFCChatClientDlg::CatShowString(CString strInfo, CString strMsg);
 };
+
+

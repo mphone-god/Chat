@@ -61,6 +61,8 @@ CMFCChatClientDlg::CMFCChatClientDlg(CWnd* pParent /*=nullptr*/)
 void CMFCChatClientDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_LIST1, m_list);
+	DDX_Control(pDX, IDC_SENDMSG_EDIT, m_input);
 }
 
 BEGIN_MESSAGE_MAP(CMFCChatClientDlg, CDialogEx)
@@ -69,6 +71,7 @@ BEGIN_MESSAGE_MAP(CMFCChatClientDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	
 	ON_BN_CLICKED(IDC_CONNECT_BIN, &CMFCChatClientDlg::OnBnClickedConnectBin)
+	ON_BN_CLICKED(IDC_SEND_BIN, &CMFCChatClientDlg::OnBnClickedSendBin)
 END_MESSAGE_MAP()
 
 
@@ -104,6 +107,8 @@ BOOL CMFCChatClientDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	// TODO: 在此添加额外的初始化代码
+	GetDlgItem(IDC_EPORT_EDIT)->SetWindowText(_T("5555"));
+	GetDlgItem(IDC_IPADDRESS)->SetWindowText(_T("192.168.1.104"));
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -124,6 +129,10 @@ void CMFCChatClientDlg::OnSysCommand(UINT nID, LPARAM lParam)
 // 如果向对话框添加最小化按钮，则需要下面的代码
 //  来绘制该图标。  对于使用文档/视图模型的 MFC 应用程序，
 //  这将由框架自动完成。
+CString CMFCChatClientDlg::CatShowString(CString strInfo,CString strMsg){
+
+}
+
 
 void CMFCChatClientDlg::OnPaint()
 {
@@ -162,18 +171,66 @@ HCURSOR CMFCChatClientDlg::OnQueryDragIcon()
 
 void CMFCChatClientDlg::OnBnClickedConnectBin()
 {
-	CString strPort, strID;
+	//拿到ip 和 端口
+	CString strPort, strIP;
 	//从控件里面获取内容
 	GetDlgItem(IDC_EPORT_EDIT)->GetWindowText(strPort);
-	GetDlgItem(IDC_IPADDRESS)->GetWindowText(strID);
+	GetDlgItem(IDC_IPADDRESS)->GetWindowText(strIP);
 	
 	//CString 转hcar*
 	USES_CONVERSION;
 	LPCSTR szPort = (LPCSTR)T2A(strPort);
-	LPCSTR szID = (LPCSTR)T2A(strID);
-	TRACE("szPort = %s,strID = %s", szPort, szID);
+	LPCSTR szIP = (LPCSTR)T2A(strIP);
+	TRACE("szPort = %s,strID = %s", szPort, szIP);
+
+	//字符串转换int 
+	int iPort = _ttoi(strPort);
+	//创建一个socket对象
+	m_client = new CMySocket;
+	
+	//创建套接字
+	if(!(m_client->Create())){
+		TRACE("m_client->Create() %d", GetLastError());
+		return;
+	}else{
+		TRACE("m_client->Create() Success");
+	}
+
+	//连接
+	if(m_client->Connect(strIP,iPort) == SOCKET_ERROR){
+		TRACE("m_client->Connect() %d", GetLastError());
+		return;
+	}
 
 
 	// TODO: 在此添加控件通知处理程序代码
 	//TRACE("[Connect]LOVE");
+}
+
+
+void CMFCChatClientDlg::OnBnClickedSendBin()
+{
+	//获取编辑框的内容
+	CString strTmpMsg;
+	GetDlgItem(IDC_SENDMSG_EDIT)->GetWindowTextW(strTmpMsg);
+
+	//获取内容
+	USES_CONVERSION;
+	char* szSendBuf = T2A(strTmpMsg);
+	//发送给服务端
+	m_client->Send(szSendBuf, 200, 0);
+
+	//显示到历史消息框
+	CString strShow = _T("我: ");
+	CString strTime;
+	m_tm = CTime::GetCurrentTime();
+	strTime = m_tm.Format("%X");
+
+	strShow = strTime + strShow;
+	strShow += strTmpMsg;
+	m_list.AddString(strShow);
+	UpdateData(FALSE);
+
+	//清空编辑框
+	GetDlgItem(IDC_SENDMSG_EDIT)->SetWindowTextW(_T(""));
 }

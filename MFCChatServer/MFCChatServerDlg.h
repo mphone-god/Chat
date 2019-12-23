@@ -3,7 +3,8 @@
 //
 
 #pragma once
-
+#include "CServerSocket.h"
+#include "CChatSocket.h"
 
 // CMFCChatServerDlg 对话框
 class CMFCChatServerDlg : public CDialogEx
@@ -34,4 +35,9 @@ protected:
 public:
 	afx_msg void OnBnClickedButton4();
 	
+	CListBox m_list;
+	CServerSocket* m_server;
+	CChatSocket* m_chat;
+	CTime m_tm;
+	afx_msg void OnBnClickedSendBtn();
 };

@@ -187,6 +187,8 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="C:\Program Files (x86)\Windows Kits\8.1\Include\shared\winerror.h" />
+    <ClInclude Include="CMySocket.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MFCChatClient.h" />
     <ClInclude Include="MFCChatClientDlg.h" />
@@ -195,6 +197,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CMySocket.cpp" />
     <ClCompile Include="MFCChatClient.cpp" />
     <ClCompile Include="MFCChatClientDlg.cpp" />
     <ClCompile Include="pch.cpp">
