@@ -14,12 +14,19 @@ CMySocket::~CMySocket() {
 void CMySocket::OnConnect(int nErrorCode){
 
 	TRACE("####OnConnect");
-	CMFCChatClientDlg* dig = (CMFCChatClientDlg*)AfxGetApp()->GetMainWnd();
-	CString str;
+	CMFCChatClientDlg* dlg = (CMFCChatClientDlg*)AfxGetApp()->GetMainWnd();
+
+	
+#if 0
 	dig->m_tm = CTime::GetCurrentTime();
 	str = dig->m_tm.Format("%X");
 	str += _T("与服务器连接成功");
-	dig->m_list.AddString(str);
+#endif
+	CString strInfo = _T(" ");
+	CString strMsg = _T("与服务器连接成功");
+	CString str;
+	str = dlg->CatShowString(strInfo, strMsg);
+	dlg->m_list.AddString(str);
 
 	CAsyncSocket::OnConnect(nErrorCode);
 }
@@ -30,20 +37,25 @@ void CMySocket::OnReceive(int nErrorCode){
 
 	CMFCChatClientDlg* dlg = (CMFCChatClientDlg*)AfxGetApp()->GetMainWnd();
 
-	char szRecvre[200] = { 0 };
+	char szRecvre[SEND_WAX_BUF] = { 0 };
 
-	Receive(szRecvre, 200, 0);
+	Receive(szRecvre, SEND_WAX_BUF, 0);
 
 	USES_CONVERSION;
 	CString strRecver = A2W(szRecvre);
-	CString strShow = _T("服务端: ");
+
+	CString strShow = _T("服务端");
+#if 0
 	CString strTime;
 	dlg->m_tm = CTime::GetCurrentTime();
 	strTime = dlg->m_tm.Format("%X:");
 
 	strShow = strTime + strShow;
 	strShow += strRecver;
-	dlg->m_list.AddString(strShow);
+#endif
+	CString str;
+	str = dlg->CatShowString(strShow, strRecver);
+	dlg->m_list.AddString(str);
 
 	CAsyncSocket::OnReceive(nErrorCode);
 

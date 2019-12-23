@@ -109,6 +109,7 @@ BOOL CMFCChatClientDlg::OnInitDialog()
 	// TODO: 在此添加额外的初始化代码
 	GetDlgItem(IDC_EPORT_EDIT)->SetWindowText(_T("5555"));
 	GetDlgItem(IDC_IPADDRESS)->SetWindowText(_T("192.168.1.104"));
+	
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -130,7 +131,19 @@ void CMFCChatClientDlg::OnSysCommand(UINT nID, LPARAM lParam)
 //  来绘制该图标。  对于使用文档/视图模型的 MFC 应用程序，
 //  这将由框架自动完成。
 CString CMFCChatClientDlg::CatShowString(CString strInfo,CString strMsg){
+	
+	CString strTime;	
 
+	m_tm = CTime::GetCurrentTime();
+	strTime = m_tm.Format("%X");
+
+	if (strInfo == _T("")) strInfo = _T("我");
+
+	strInfo = strTime + strInfo;
+	strInfo += _T(": ");
+	strInfo += strMsg;
+	
+	return strInfo;
 }
 
 
@@ -212,23 +225,23 @@ void CMFCChatClientDlg::OnBnClickedSendBin()
 {
 	//获取编辑框的内容
 	CString strTmpMsg;
+	CString strName = _T("");
 	GetDlgItem(IDC_SENDMSG_EDIT)->GetWindowTextW(strTmpMsg);
-
-	//获取内容
+	GetDlgItem(IDC_EDIT_NAME)->GetWindowTextW(strName);
+	//转换
 	USES_CONVERSION;
 	char* szSendBuf = T2A(strTmpMsg);
+
 	//发送给服务端
-	m_client->Send(szSendBuf, 200, 0);
+	m_client->Send(szSendBuf, SEND_WAX_BUF, 0);
 
 	//显示到历史消息框
-	CString strShow = _T("我: ");
-	CString strTime;
-	m_tm = CTime::GetCurrentTime();
-	strTime = m_tm.Format("%X");
+	
+	
+	
+	strName = CatShowString(strName, strTmpMsg);
 
-	strShow = strTime + strShow;
-	strShow += strTmpMsg;
-	m_list.AddString(strShow);
+	m_list.AddString(strName);
 	UpdateData(FALSE);
 
 	//清空编辑框

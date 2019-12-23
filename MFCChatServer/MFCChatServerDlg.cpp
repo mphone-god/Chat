@@ -160,7 +160,21 @@ HCURSOR CMFCChatServerDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+CString CMFCChatServerDlg::CatShowString(CString strInfo, CString strMsg) {
 
+	CString strTime;
+
+	m_tm = CTime::GetCurrentTime();
+	strTime = m_tm.Format("%X");
+
+	if (strInfo == _T("")) strInfo = _T("我");
+
+	strInfo = strTime + strInfo;
+	strInfo += _T(": ");
+	strInfo += strMsg;
+
+	return strInfo;
+}
 
 void CMFCChatServerDlg::OnBnClickedButton4()
 {
@@ -217,8 +231,8 @@ void CMFCChatServerDlg::OnBnClickedSendBtn()
 	USES_CONVERSION;
 	char* szSendBuf = T2A(strTmpMsg);
 	//发送给客户端
-	m_chat->Send(szSendBuf, 200, 0);
-
+	m_chat->Send(szSendBuf, SEND_WAX_BUF, 0);
+#if 0
 	//显示到历史消息框
 	CString strShow = _T("我: ");
 	CString strTime;
@@ -227,6 +241,9 @@ void CMFCChatServerDlg::OnBnClickedSendBtn()
 
 	strShow = strTime + strShow;
 	strShow += strTmpMsg;
+#endif
+	CString strShow = _T("我:");
+	strShow = CatShowString(strShow,strTmpMsg);
 	m_list.AddString(strShow);
 	UpdateData(FALSE);
 

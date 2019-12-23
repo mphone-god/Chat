@@ -19,16 +19,16 @@ void CChatSocket::OnReceive(int nErrorCode)
 	TRACE("####Server OnReceive");
 	CMFCChatServerDlg* dlg = (CMFCChatServerDlg*)AfxGetApp()->GetMainWnd();
 
-	char szRecvBuf[200] = { 0 };
-	Receive(szRecvBuf, 200, 0);
+	char szRecvBuf[SEND_WAX_BUF] = { 0 };
+	Receive(szRecvBuf, SEND_WAX_BUF, 0);
 	TRACE("#####Receive szRecvBuf", szRecvBuf);
 
 	//显示Buf
 	USES_CONVERSION;
 	CString strRecvMsg = A2W(szRecvBuf);
 	CString strShow = _T("客户端: ");
-	CString strRTime;
-	
+
+#if 0
 	//显示到历史消息框
 	CString strTime;
 	dlg->m_tm = CTime::GetCurrentTime();
@@ -36,6 +36,8 @@ void CChatSocket::OnReceive(int nErrorCode)
 
 	strShow = strTime + strShow;
 	strShow += strRecvMsg;
+#endif
+	strShow = dlg->CatShowString(strShow,strRecvMsg);
 	dlg->m_list.AddString(strShow);
 	CAsyncSocket::OnReceive(nErrorCode);
 	

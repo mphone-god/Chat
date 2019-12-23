@@ -22,11 +22,14 @@ void CServerSocket::OnAccept(int nErrorCode){
 
 	//连接客户端
 	Accept(*(dlg->m_chat));
-	CString str;
-
+	CString str = _T("客户端连接成功");
+#if 0
 	dlg->m_tm = CTime::GetCurrentTime();
 	str = dlg->m_tm.Format("%X ");
 	str += _T("客户端连接成功");
+#endif
+
+	str = dlg->CatShowString(str,_T(""));
 	dlg->m_list.AddString(str);
 	dlg->m_list.UpdateData(FALSE);
 
