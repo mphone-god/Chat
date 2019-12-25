@@ -42,6 +42,10 @@ public:
 	CEdit m_input;
 	afx_msg void OnBnClickedSendBin();
 	CString CMFCChatClientDlg::CatShowString(CString strInfo, CString strMsg);
+	afx_msg void OnBnClickedText();
+	afx_msg void OnBnClickedTextName();
+	afx_msg void OnBnClickedAutosendRadio();
+	afx_msg void OnBnClickedClearmsgBin();
 };
 
 

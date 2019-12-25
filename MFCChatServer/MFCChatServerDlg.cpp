@@ -70,6 +70,9 @@ BEGIN_MESSAGE_MAP(CMFCChatServerDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_START_BTN, &CMFCChatServerDlg::OnBnClickedButton4)
 
 	ON_BN_CLICKED(IDC_SEND_BTN, &CMFCChatServerDlg::OnBnClickedSendBtn)
+	ON_BN_CLICKED(IDC_GET_NAME, &CMFCChatServerDlg::OnBnClickedGetName)
+	ON_BN_CLICKED(IDC_OPT_FOR, &CMFCChatServerDlg::OnBnClickedOptFor)
+	ON_BN_CLICKED(IDC_CLEAR_BTN, &CMFCChatServerDlg::OnBnClickedClearBtn)
 END_MESSAGE_MAP()
 
 
@@ -106,6 +109,29 @@ BOOL CMFCChatServerDlg::OnInitDialog()
 
 	// TODO: 在此添加额外的初始化代码
 	GetDlgItem(IDC_KONG)->SetWindowText(_T("5555"));
+
+	//读取配置文件
+	WCHAR wszName[MAX_PATH] = { 0 };
+	WCHAR wszPath[MAX_PATH] = { 0 };
+
+	GetCurrentDirectoryW(MAX_PATH, wszPath);
+	CString strFilePath;
+	strFilePath.Format(L"%ls//TestF.ini", wszPath);
+
+	DWORD dwNum = GetPrivateProfileStringW(_T("CLIENT"), _T("NAME"),
+		NULL, wszName, MAX_PATH, strFilePath);
+	if (dwNum > 0) {
+		TRACE(_T("######ererererererererer"));
+		SetDlgItemText(IDC_NAME, wszName);
+		UpdateData(FALSE);
+		
+	}
+	else{
+		WritePrivateProfileStringW(_T("CLIENT"), _T("NAME"),
+			L"服务端", strFilePath);
+		SetDlgItemText(IDC_NAME, L"服务端");
+		UpdateData(FALSE);
+}
 
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
@@ -167,10 +193,9 @@ CString CMFCChatServerDlg::CatShowString(CString strInfo, CString strMsg) {
 	m_tm = CTime::GetCurrentTime();
 	strTime = m_tm.Format("%X");
 
-	if (strInfo == _T("")) strInfo = _T("我");
+	//if (strInfo == _T("")) strInfo = _T("我");
 
-	strInfo = strTime + strInfo;
-	strInfo += _T(": ");
+	strInfo = strTime + strInfo ;
 	strInfo += strMsg;
 
 	return strInfo;
@@ -226,27 +251,59 @@ void CMFCChatServerDlg::OnBnClickedSendBtn()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	CString strTmpMsg;
+	CString strShow;
 	GetDlgItem(IDC_PORT_EDIT)->GetWindowTextW(strTmpMsg);
-
+	GetDlgItemText(IDC_NAME, strShow);
+	strTmpMsg = strShow + _T(":") +strTmpMsg;
+	
 	USES_CONVERSION;
 	char* szSendBuf = T2A(strTmpMsg);
+
 	//发送给客户端
 	m_chat->Send(szSendBuf, SEND_WAX_BUF, 0);
-#if 0
-	//显示到历史消息框
-	CString strShow = _T("我: ");
-	CString strTime;
-	m_tm = CTime::GetCurrentTime();
-	strTime = m_tm.Format("%X");
 
-	strShow = strTime + strShow;
-	strShow += strTmpMsg;
-#endif
-	CString strShow = _T("我:");
-	strShow = CatShowString(strShow,strTmpMsg);
+	
+	strShow = CatShowString(_T(""), strTmpMsg);
 	m_list.AddString(strShow);
 	UpdateData(FALSE);
 
 	//清空编辑框
 	GetDlgItem(IDC_PORT_EDIT)->SetWindowTextW(_T(""));
+}
+
+
+void CMFCChatServerDlg::OnBnClickedGetName()
+{
+	CString strName;
+	GetDlgItemText(IDC_NAME, strName);
+	if (strName.GetLength() <= 0) {
+		MessageBox(_T("昵称不能为空!"));
+		return;
+	}
+	if (IDOK == AfxMessageBox(_T("确定修改昵称?"), MB_OKCANCEL)) {
+		WCHAR strPath[MAX_PATH] = { 0 };
+		//获取文件框的内容
+		//获取当前路径
+		GetCurrentDirectoryW(MAX_PATH, strPath);
+
+		CString strFilePath;
+		strFilePath.Format(L"%ls//TestF.ini", strPath);
+		WritePrivateProfileStringW(_T("CLIENT"), _T("NAME"), strName, strFilePath);
+	}
+}
+
+void CMFCChatServerDlg::OnBnClickedOptFor()
+{
+	if (((CButton*)GetDlgItem(IDC_OPT_FOR))->GetCheck()){
+		((CButton*)GetDlgItem(IDC_OPT_FOR))->SetCheck(FALSE);
+	}
+	else {
+		((CButton*)GetDlgItem(IDC_OPT_FOR))->SetCheck(TRUE);
+	}
+}
+
+
+void CMFCChatServerDlg::OnBnClickedClearBtn()
+{
+	m_list.ResetContent();
 }

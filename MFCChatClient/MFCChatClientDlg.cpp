@@ -72,6 +72,10 @@ BEGIN_MESSAGE_MAP(CMFCChatClientDlg, CDialogEx)
 	
 	ON_BN_CLICKED(IDC_CONNECT_BIN, &CMFCChatClientDlg::OnBnClickedConnectBin)
 	ON_BN_CLICKED(IDC_SEND_BIN, &CMFCChatClientDlg::OnBnClickedSendBin)
+	
+	ON_BN_CLICKED(IDC_TEXT_NAME, &CMFCChatClientDlg::OnBnClickedTextName)
+	ON_BN_CLICKED(IDC_AUTOSEND_RADIO, &CMFCChatClientDlg::OnBnClickedAutosendRadio)
+	ON_BN_CLICKED(IDC_CLEARMSG_BIN, &CMFCChatClientDlg::OnBnClickedClearmsgBin)
 END_MESSAGE_MAP()
 
 
@@ -108,8 +112,32 @@ BOOL CMFCChatClientDlg::OnInitDialog()
 
 	// TODO: 在此添加额外的初始化代码
 	GetDlgItem(IDC_EPORT_EDIT)->SetWindowText(_T("5555"));
-	GetDlgItem(IDC_IPADDRESS)->SetWindowText(_T("192.168.1.104"));
+	GetDlgItem(IDC_IPADDRESS)->SetWindowText(_T("192.168.117.1"));
 	
+
+
+	//从文件获取昵称
+	WCHAR wszrName[MAX_PATH] = { 0 };
+	WCHAR strPath[MAX_PATH] = { 0 };
+	//获取当前路径
+	GetCurrentDirectoryW(MAX_PATH, strPath);
+	TRACE("####strPath= %ls", strPath);
+	//文件名
+	CString strFilePath;
+	strFilePath.Format(L"%ls//Test.ini", strPath);
+	DWORD dwNum = GetPrivateProfileStringW(_T("CLIENT"), _T("NAME"),NULL,
+		wszrName,MAX_PATH, strFilePath);
+	if(dwNum > 0){
+		//把获取的昵称放到控件
+		SetDlgItemText(IDC_NAME, wszrName);
+		UpdateData(FALSE);
+	}
+	else {
+		
+		WritePrivateProfileStringW(_T("CLIENT"), _T("NAME"), L"客户端", strFilePath);
+		SetDlgItemText(IDC_NAME, L"客户端");
+		UpdateData(FALSE);
+	}
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -137,10 +165,9 @@ CString CMFCChatClientDlg::CatShowString(CString strInfo,CString strMsg){
 	m_tm = CTime::GetCurrentTime();
 	strTime = m_tm.Format("%X");
 
-	if (strInfo == _T("")) strInfo = _T("我");
-
-	strInfo = strTime + strInfo;
-	strInfo += _T(": ");
+	//if (strInfo == _T("")) strInfo = _T("我");
+	
+	strInfo = strTime + strInfo ;
 	strInfo += strMsg;
 	
 	return strInfo;
@@ -225,9 +252,11 @@ void CMFCChatClientDlg::OnBnClickedSendBin()
 {
 	//获取编辑框的内容
 	CString strTmpMsg;
-	CString strName = _T("");
+	CString strName ;
 	GetDlgItem(IDC_SENDMSG_EDIT)->GetWindowTextW(strTmpMsg);
-	GetDlgItem(IDC_EDIT_NAME)->GetWindowTextW(strName);
+	GetDlgItem(IDC_NAME)->GetWindowTextW(strName);
+	
+	strTmpMsg = strName + _T(":") + strTmpMsg;
 	//转换
 	USES_CONVERSION;
 	char* szSendBuf = T2A(strTmpMsg);
@@ -235,15 +264,62 @@ void CMFCChatClientDlg::OnBnClickedSendBin()
 	//发送给服务端
 	m_client->Send(szSendBuf, SEND_WAX_BUF, 0);
 
-	//显示到历史消息框
-	
-	
-	
-	strName = CatShowString(strName, strTmpMsg);
 
+	strName = CatShowString(_T(""), strTmpMsg);
+	//显示到历史消息框
 	m_list.AddString(strName);
 	UpdateData(FALSE);
 
 	//清空编辑框
 	GetDlgItem(IDC_SENDMSG_EDIT)->SetWindowTextW(_T(""));
+}
+
+
+
+void CMFCChatClientDlg::OnBnClickedTextName()
+{
+	CString strName;
+	//获取文件框的昵称内容
+	GetDlgItemText(IDC_NAME, strName);
+	if(strName.GetLength() <= 0 ){
+		MessageBox(_T("昵称不能为空!"));
+		return;
+	}
+	if(IDOK == AfxMessageBox(_T("确定要修改昵称吗?"),MB_OKCANCEL)){
+		//保存昵称
+		
+		WCHAR strPath[MAX_PATH] = { 0 };
+
+		
+		
+
+		//获取当前路径
+		GetCurrentDirectoryW(MAX_PATH, strPath);
+		TRACE("####strPath= %ls", strPath);
+		//文件名
+		CString strFilePath;
+		strFilePath.Format(L"%ls//Test.ini", strPath);
+		WritePrivateProfileStringW(_T("CLIENT"), _T("NAME"), strName, strFilePath);
+
+	}
+	
+	
+}
+
+
+void CMFCChatClientDlg::OnBnClickedAutosendRadio()
+{
+	if (((CButton*)GetDlgItem(IDC_AUTOSEND_RADIO))->GetCheck()){
+
+		((CButton*)GetDlgItem(IDC_AUTOSEND_RADIO))->SetCheck(FALSE);
+	}
+	else {
+		((CButton*)GetDlgItem(IDC_AUTOSEND_RADIO))->SetCheck(TRUE);
+	}
+}
+
+
+void CMFCChatClientDlg::OnBnClickedClearmsgBin()
+{
+	m_list.ResetContent();
 }

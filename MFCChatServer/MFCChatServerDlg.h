@@ -41,4 +41,7 @@ public:
 	CTime m_tm;
 	afx_msg void OnBnClickedSendBtn();
 	CString CMFCChatServerDlg::CatShowString(CString strInfo, CString strMsg);
+	afx_msg void OnBnClickedGetName();
+	afx_msg void OnBnClickedOptFor();
+	afx_msg void OnBnClickedClearBtn();
 };

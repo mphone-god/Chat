@@ -44,7 +44,8 @@ void CMySocket::OnReceive(int nErrorCode){
 	USES_CONVERSION;
 	CString strRecver = A2W(szRecvre);
 
-	CString strShow = _T("服务端");
+	CString strShow;
+	
 #if 0
 	CString strTime;
 	dlg->m_tm = CTime::GetCurrentTime();
@@ -53,9 +54,30 @@ void CMySocket::OnReceive(int nErrorCode){
 	strShow = strTime + strShow;
 	strShow += strRecver;
 #endif
+
 	CString str;
 	str = dlg->CatShowString(strShow, strRecver);
 	dlg->m_list.AddString(str);
+
+
+	if (((CButton*)dlg->GetDlgItem(IDC_AUTOSEND_RADIO))->GetCheck()) {
+		//自动回复
+
+		CString strAutoSendMsg;
+		dlg->GetDlgItemText(IDC_AUTOSEND_RADIO, strAutoSendMsg);
+		//封包+组格式
+		CString strName;
+		dlg->GetDlgItemText(IDC_NAME, strName);
+
+		CString strMsg = _T("自动回复:") + strAutoSendMsg;
+		//CString strMsgMsg = dlg->CatShowString(strName, strMsg);
+		USES_CONVERSION;
+		char* szBuf = T2A(strMsg);
+		dlg->m_client->Send(szBuf, SEND_WAX_BUF, 0);
+
+		dlg->m_list.AddString(strMsg);
+		dlg->m_list.UpdateData(FALSE);
+	}
 
 	CAsyncSocket::OnReceive(nErrorCode);
 
